@@ -10,16 +10,16 @@
  */
 package org.eclipse.recommenders.jayes.inference;
 
+import org.eclipse.recommenders.jayes.BayesNet;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
+import org.eclipse.recommenders.jayes.factor.FactorFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
-import org.eclipse.recommenders.jayes.factor.FactorFactory;
-
 public abstract class AbstractInferer implements IBayesInferer {
 
-    protected Map<BayesNode, String> evidence = new HashMap<BayesNode, String>();
+    protected Map<BayesNodeBase, String> evidence = new HashMap<BayesNodeBase, String>();
 
     protected double[][] beliefs;
     protected boolean beliefsValid;
@@ -36,13 +36,13 @@ public abstract class AbstractInferer implements IBayesInferer {
     }
 
     @Override
-    public void addEvidence(final BayesNode node, final String outcome) {
+    public void addEvidence(final BayesNodeBase node, final String outcome) {
         evidence.put(node, outcome);
         beliefsValid = false;
     }
 
     @Override
-    public double[] getBeliefs(final BayesNode node) {
+    public double[] getBeliefs(final BayesNodeBase node) {
         if (!beliefsValid) {
             beliefsValid = true;
             updateBeliefs();
@@ -53,20 +53,20 @@ public abstract class AbstractInferer implements IBayesInferer {
     @Override
     public void setNetwork(final BayesNet bayesNet) {
         beliefs = new double[bayesNet.getNodes().size()][];
-        for (final BayesNode n : bayesNet.getNodes()) {
+        for (final BayesNodeBase n : bayesNet.getNodes()) {
             beliefs[n.getId()] = new double[n.getOutcomeCount()];
         }
         this.factory.setReferenceNetwork(bayesNet);
     }
 
     @Override
-    public void setEvidence(final Map<BayesNode, String> evidence) {
+    public void setEvidence(final Map<BayesNodeBase, String> evidence) {
         this.evidence = evidence;
         beliefsValid = false;
     }
 
     @Override
-    public Map<BayesNode, String> getEvidence() {
+    public Map<BayesNodeBase, String> getEvidence() {
         return evidence;
     }
 

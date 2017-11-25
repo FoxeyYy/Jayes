@@ -10,13 +10,13 @@
  */
 package org.eclipse.recommenders.jayes.inference;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
 import org.eclipse.recommenders.jayes.sampling.BasicSampler;
 import org.eclipse.recommenders.jayes.util.MathUtils;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class RejectionSampling extends AbstractInferer {
 
@@ -33,13 +33,13 @@ public class RejectionSampling extends AbstractInferer {
     @Override
     protected void updateBeliefs() {
         for (int i = 0; i < sampleCount; i++) {
-            Map<BayesNode, String> sample = sampler.sample();
+            Map<BayesNodeBase, String> sample = sampler.sample();
             boolean isConsistentWithEvidence = isConsistenWithEvidence(sample);
             if (!isConsistentWithEvidence) {
                 i--;
                 continue;
             }
-            for (BayesNode e : sample.keySet()) {
+            for (BayesNodeBase e : sample.keySet()) {
                 beliefs[e.getId()][e.getOutcomeIndex(sample.get(e))]++;
             }
         }
@@ -53,8 +53,8 @@ public class RejectionSampling extends AbstractInferer {
             beliefs[i] = MathUtils.normalize(beliefs[i]);
     }
 
-    private boolean isConsistenWithEvidence(Map<BayesNode, String> sample) {
-        for (Entry<BayesNode, String> e : evidence.entrySet()) {
+    private boolean isConsistenWithEvidence(Map<BayesNodeBase, String> sample) {
+        for (Entry<BayesNodeBase, String> e : evidence.entrySet()) {
             boolean sampleMatchesEvidence = e.getValue().equals(sample.get(e.getKey()));
             if (!sampleMatchesEvidence) {
                 return false;

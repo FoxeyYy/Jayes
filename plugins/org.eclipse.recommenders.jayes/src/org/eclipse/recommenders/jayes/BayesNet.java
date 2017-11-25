@@ -10,25 +10,21 @@
  */
 package org.eclipse.recommenders.jayes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BayesNet {
 
-    private List<BayesNode> nodes = new ArrayList<BayesNode>();
-    private Map<String, BayesNode> nodeMap = new HashMap<String, BayesNode>();
+    private List<BayesNodeBase> nodes = new ArrayList<>();
+    private Map<String, BayesNodeBase> nodeMap = new HashMap<>();
 
     private String name = "Bayesian Network";
 
     /**
-     * 
+     *
      * @deprecated use createNode instead
      */
     @Deprecated
-    public int addNode(BayesNode node) {
+    public int addNode(BayesNodeBase node) {
         node.setId(nodes.size());
         nodes.add(node);
         if (nodeMap.containsKey(node.getName())) {
@@ -39,21 +35,31 @@ public class BayesNet {
     }
 
     @SuppressWarnings("deprecation")
-    public BayesNode createNode(String name) {
-        BayesNode node = new BayesNode(name);
+    public BayesNodeBase createNode(String name, BayesNodeBase.TYPE type) {
+
+        BayesNodeBase node = null;
+
+        switch(type) {
+            case DEFAULT:
+                node = new BayesNode(name);
+                break;
+            case NOISY_OR:
+                node = new BayesNodeNoisyOR(name);
+                break;
+        }
         addNode(node);
         return node;
     }
 
-    public BayesNode getNode(String name) {
+    public BayesNodeBase getNode(String name) {
         return nodeMap.get(name);
     }
 
-    public BayesNode getNode(int id) {
+    public BayesNodeBase getNode(int id) {
         return nodes.get(id);
     }
 
-    public List<BayesNode> getNodes() {
+    public List<BayesNodeBase> getNodes() {
         return Collections.unmodifiableList(nodes);
     }
 

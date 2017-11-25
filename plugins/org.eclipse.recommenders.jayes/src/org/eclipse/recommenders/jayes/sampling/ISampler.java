@@ -10,10 +10,10 @@
  */
 package org.eclipse.recommenders.jayes.sampling;
 
-import java.util.Map;
-
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
+
+import java.util.Map;
 
 public interface ISampler {
 
@@ -25,9 +25,9 @@ public interface ISampler {
 
     void setNetwork(BayesNet net);
 
-    void setEvidence(Map<BayesNode, String> evidence);
+    void setEvidence(Map<BayesNodeBase, String> evidence);
 
-    Map<BayesNode, String> sample();
+    Map<BayesNodeBase, String> sample();
 
     void seed(long seed);
 

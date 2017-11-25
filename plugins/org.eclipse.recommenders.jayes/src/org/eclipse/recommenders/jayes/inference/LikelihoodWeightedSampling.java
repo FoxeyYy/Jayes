@@ -10,12 +10,12 @@
  */
 package org.eclipse.recommenders.jayes.inference;
 
-import java.util.Map;
-
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
 import org.eclipse.recommenders.jayes.sampling.BasicSampler;
 import org.eclipse.recommenders.jayes.util.MathUtils;
+
+import java.util.Map;
 
 public class LikelihoodWeightedSampling extends AbstractInferer {
 
@@ -33,10 +33,10 @@ public class LikelihoodWeightedSampling extends AbstractInferer {
     protected void updateBeliefs() {
         sampler.setEvidence(evidence);
         for (int i = 0; i < sampleCount; i++) {
-            Map<BayesNode, String> sample = sampler.sample();
+            Map<BayesNodeBase, String> sample = sampler.sample();
             double weight = computeEvidenceProbability(sample);
 
-            for (BayesNode e : sample.keySet()) {
+            for (BayesNodeBase e : sample.keySet()) {
                 beliefs[e.getId()][e.getOutcomeIndex(sample.get(e))] += weight;
             }
         }
@@ -50,9 +50,9 @@ public class LikelihoodWeightedSampling extends AbstractInferer {
             beliefs[i] = MathUtils.normalize(beliefs[i]);
     }
 
-    private double computeEvidenceProbability(Map<BayesNode, String> sample) {
+    private double computeEvidenceProbability(Map<BayesNodeBase, String> sample) {
         double factor = 1.0;
-        for (BayesNode n : evidence.keySet()) {
+        for (BayesNodeBase n : evidence.keySet()) {
             factor *= n.marginalize(sample)[n.getOutcomeIndex(evidence.get(n))];
         }
         return factor;

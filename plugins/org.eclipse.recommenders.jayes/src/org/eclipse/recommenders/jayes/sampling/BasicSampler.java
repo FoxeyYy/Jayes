@@ -10,29 +10,22 @@
  */
 package org.eclipse.recommenders.jayes.sampling;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
+
+import java.util.*;
 
 public class BasicSampler implements ISampler {
 
-    private List<BayesNode> topologicallySortedNodes;
-    private Map<BayesNode, String> evidence = Collections.emptyMap();
+    private List<BayesNodeBase> topologicallySortedNodes;
+    private Map<BayesNodeBase, String> evidence = Collections.emptyMap();
     private Random random = new Random();
 
     @Override
-    public Map<BayesNode, String> sample() {
-        Map<BayesNode, String> result = new HashMap<BayesNode, String>();
+    public Map<BayesNodeBase, String> sample() {
+        Map<BayesNodeBase, String> result = new HashMap<BayesNodeBase, String>();
         result.putAll(evidence);
-        for (BayesNode n : topologicallySortedNodes) {
+        for (BayesNodeBase n : topologicallySortedNodes) {
             if (!evidence.containsKey(n)) {
                 int newEvidence = sampleOutcome(n, result);
                 result.put(n, n.getOutcomeName(newEvidence));
@@ -42,7 +35,7 @@ public class BasicSampler implements ISampler {
 
     }
 
-    private int sampleOutcome(BayesNode node, Map<BayesNode, String> currentSample) {
+    private int sampleOutcome(BayesNodeBase node, Map<BayesNodeBase, String> currentSample) {
         double[] probs = node.marginalize(currentSample);
         double currentProb = 0;
         int newEvidence = 0;
@@ -62,26 +55,26 @@ public class BasicSampler implements ISampler {
         topologicallySortedNodes = topsort(net.getNodes());
     }
 
-    private List<BayesNode> topsort(List<BayesNode> list) {
-        List<BayesNode> result = new LinkedList<BayesNode>();
-        Set<BayesNode> visited = new HashSet<BayesNode>();
-        for (BayesNode n : list)
+    private List<BayesNodeBase> topsort(List<BayesNodeBase> list) {
+        List<BayesNodeBase> result = new LinkedList<BayesNodeBase>();
+        Set<BayesNodeBase> visited = new HashSet<BayesNodeBase>();
+        for (BayesNodeBase n : list)
             depthFirstSearch(n, visited, result);
         Collections.reverse(result);
         return result;
     }
 
-    private void depthFirstSearch(BayesNode n, Set<BayesNode> visited, List<BayesNode> finished) {
+    private void depthFirstSearch(BayesNodeBase n, Set<BayesNodeBase> visited, List<BayesNodeBase> finished) {
         if (visited.contains(n))
             return;
         visited.add(n);
-        for (BayesNode c : n.getChildren())
+        for (BayesNodeBase c : n.getChildren())
             depthFirstSearch(c, visited, finished);
         finished.add(n);
     }
 
     @Override
-    public void setEvidence(Map<BayesNode, String> evidence) {
+    public void setEvidence(Map<BayesNodeBase, String> evidence) {
         this.evidence = evidence;
 
     }

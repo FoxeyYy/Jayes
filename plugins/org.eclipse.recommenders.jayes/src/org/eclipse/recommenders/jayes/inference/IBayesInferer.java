@@ -10,21 +10,21 @@
  */
 package org.eclipse.recommenders.jayes.inference;
 
-import java.util.Map;
-
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
+
+import java.util.Map;
 
 public interface IBayesInferer {
 
     void setNetwork(BayesNet bayesNet);
 
-    void setEvidence(Map<BayesNode, String/*outcome*/> evidence);
+    void setEvidence(Map<BayesNodeBase, String/*outcome*/> evidence);
 
-    void addEvidence(BayesNode node, String outcome);
+    void addEvidence(BayesNodeBase node, String outcome);
 
-    Map<BayesNode, String> getEvidence();
+    Map<BayesNodeBase, String> getEvidence();
 
-    double[] getBeliefs(BayesNode node);
+    double[] getBeliefs(BayesNodeBase node);
 
 }

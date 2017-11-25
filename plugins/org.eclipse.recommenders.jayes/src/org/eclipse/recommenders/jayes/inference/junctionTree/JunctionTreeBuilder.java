@@ -10,24 +10,18 @@
  */
 package org.eclipse.recommenders.jayes.inference.junctionTree;
 
-import static org.eclipse.recommenders.jayes.util.Pair.newPair;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ListIterator;
-
 import org.eclipse.recommenders.internal.jayes.util.UnionFind;
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
 import org.eclipse.recommenders.jayes.util.Graph;
 import org.eclipse.recommenders.jayes.util.Graph.Edge;
 import org.eclipse.recommenders.jayes.util.Pair;
 import org.eclipse.recommenders.jayes.util.triangulation.GraphElimination;
 import org.eclipse.recommenders.jayes.util.triangulation.IEliminationHeuristic;
+
+import java.util.*;
+
+import static org.eclipse.recommenders.jayes.util.Pair.newPair;
 
 public class JunctionTreeBuilder {
     private IEliminationHeuristic heuristic;
@@ -51,19 +45,19 @@ public class JunctionTreeBuilder {
     private Graph buildMoralGraph(BayesNet net) {
         Graph moral = new Graph();
         moral.initialize(net.getNodes().size());
-        for (final BayesNode node : net.getNodes()) {
+        for (final BayesNodeBase node : net.getNodes()) {
             addMoralEdges(moral, node);
         }
         return moral;
     }
 
-    private void addMoralEdges(Graph moral, final BayesNode node) {
-        final ListIterator<BayesNode> it = node.getParents().listIterator();
+    private void addMoralEdges(Graph moral, final BayesNodeBase node) {
+        final ListIterator<BayesNodeBase> it = node.getParents().listIterator();
         while (it.hasNext()) {
-            final BayesNode parent = it.next();
-            final ListIterator<BayesNode> remainingParentsIt = node.getParents().listIterator(it.nextIndex());
+            final BayesNodeBase parent = it.next();
+            final ListIterator<BayesNodeBase> remainingParentsIt = node.getParents().listIterator(it.nextIndex());
             while (remainingParentsIt.hasNext()) { // connect parents
-                final BayesNode otherParent = remainingParentsIt.next();
+                final BayesNodeBase otherParent = remainingParentsIt.next();
                 moral.addEdge(parent.getId(), otherParent.getId());
             }
             moral.addEdge(node.getId(), parent.getId());
@@ -85,7 +79,7 @@ public class JunctionTreeBuilder {
 
     private double[] weightNodesByOutcomes(BayesNet net) {
         double[] weights = new double[net.getNodes().size()];
-        for (BayesNode node : net.getNodes()) {
+        for (BayesNodeBase node : net.getNodes()) {
             weights[node.getId()] = Math.log(node.getOutcomeCount());
             // using these weights is the same as minimizing the resulting cluster factor size
             // which is given by the product of the variable outcome counts.

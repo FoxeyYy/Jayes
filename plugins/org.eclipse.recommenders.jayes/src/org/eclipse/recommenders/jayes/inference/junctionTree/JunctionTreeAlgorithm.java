@@ -6,23 +6,9 @@
  */
 package org.eclipse.recommenders.jayes.inference.junctionTree;
 
-import static org.eclipse.recommenders.jayes.util.Pair.newPair;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.eclipse.recommenders.internal.jayes.util.ArrayUtils;
 import org.eclipse.recommenders.jayes.BayesNet;
-import org.eclipse.recommenders.jayes.BayesNode;
+import org.eclipse.recommenders.jayes.BayesNodeBase;
 import org.eclipse.recommenders.jayes.factor.AbstractFactor;
 import org.eclipse.recommenders.jayes.factor.arraywrapper.DoubleArrayWrapper;
 import org.eclipse.recommenders.jayes.factor.arraywrapper.IArrayWrapper;
@@ -35,6 +21,11 @@ import org.eclipse.recommenders.jayes.util.Pair;
 import org.eclipse.recommenders.jayes.util.sharing.CanonicalArrayWrapperManager;
 import org.eclipse.recommenders.jayes.util.sharing.CanonicalIntArrayManager;
 import org.eclipse.recommenders.jayes.util.triangulation.MinFillIn;
+
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.eclipse.recommenders.jayes.util.Pair.newPair;
 
 public class JunctionTreeAlgorithm extends AbstractInferer {
 
@@ -68,7 +59,7 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
     }
 
     @Override
-    public double[] getBeliefs(final BayesNode node) {
+    public double[] getBeliefs(final BayesNodeBase node) {
         if (!beliefsValid) {
             beliefsValid = true;
             updateBeliefs();
@@ -131,13 +122,13 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
 
         clustersHavingEvidence.clear();
         Arrays.fill(isObserved, false);
-        for (BayesNode n : evidence.keySet()) {
+        for (BayesNodeBase n : evidence.keySet()) {
             incorporateEvidence(n);
         }
 
     }
 
-    private void incorporateEvidence(final BayesNode node) {
+    private void incorporateEvidence(final BayesNodeBase node) {
         int n = node.getId();
         isObserved[n] = true;
         // get evidence to all concerned factors (includes home cluster)
@@ -149,7 +140,7 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
 
     private int findPropagationRoot() {
         int propagationRoot = 0;
-        for (BayesNode n : evidence.keySet()) {
+        for (BayesNodeBase n : evidence.keySet()) {
             propagationRoot = concernedClusters[n.getId()][0];
         }
         return propagationRoot;
@@ -361,7 +352,7 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
 
     private int[] computeHomeClusters(BayesNet net, final List<List<Integer>> clusters) {
         int[] homeClusters = new int[net.getNodes().size()];
-        for (final BayesNode node : net.getNodes()) {
+        for (final BayesNodeBase node : net.getNodes()) {
             final List<Integer> nodeAndParents = getNodeAndParentIds(node);
             for (final ListIterator<List<Integer>> clusterIt = clusters.listIterator(); clusterIt.hasNext();) {
                 if (clusterIt.next().containsAll(nodeAndParents)) {
@@ -373,10 +364,10 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
         return homeClusters;
     }
 
-    private List<Integer> getNodeAndParentIds(final BayesNode n) {
+    private List<Integer> getNodeAndParentIds(final BayesNodeBase n) {
         final List<Integer> nodeAndParents = new ArrayList<Integer>(n.getParents().size() + 1);
         nodeAndParents.add(n.getId());
-        for (final BayesNode p : n.getParents()) {
+        for (final BayesNodeBase p : n.getParents()) {
             nodeAndParents.add(p.getId());
         }
         return nodeAndParents;
@@ -398,7 +389,7 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
 
     private Map<Integer, List<AbstractFactor>> findMultiplicationPartners(BayesNet net, int[] homeClusters) {
         Map<Integer, List<AbstractFactor>> potentialMap = new HashMap<Integer, List<AbstractFactor>>();
-        for (final BayesNode node : net.getNodes()) {
+        for (final BayesNodeBase node : net.getNodes()) {
             final Integer nodeHome = homeClusters[node.getId()];
             if (!potentialMap.containsKey(nodeHome)) {
                 potentialMap.put(nodeHome, new ArrayList<AbstractFactor>());
@@ -497,7 +488,7 @@ public class JunctionTreeAlgorithm extends AbstractInferer {
     }
 
     private void multiplyCPTsIntoPotentials(BayesNet net, int[] homeClusters) {
-        for (final BayesNode node : net.getNodes()) {
+        for (final BayesNodeBase node : net.getNodes()) {
             final AbstractFactor nodeHome = nodePotentials[homeClusters[node.getId()]];
             if (nodeHome.isLogScale()) {
                 nodeHome.multiplyCompatibleToLog(node.getFactor());
